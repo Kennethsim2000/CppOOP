@@ -4,6 +4,7 @@
 #include <format>
 #include <memory>
 #include <list>
+#include <map>
 
 enum class OrderType
 {
@@ -114,6 +115,75 @@ private:
 
 using OrderPointer = std::shared_ptr<Order>; // we use a shared pointer because it can be referenced from both the bid and ask maps
 using OrderPointers = std::list<OrderPointer>;
+
+// Representation of an order to be modified
+class OrderModify
+{
+public:
+    OrderModify(OrderId orderId, Side side, Price price, Quantity quantity) : orderId_(orderId), side_(side), price_(price), quantity_(quantity) {}
+    const OrderId getOrderId()
+    {
+        return orderId_;
+    }
+    const Side getSide()
+    {
+        return side_;
+    }
+    const Price getPrice()
+    {
+        return price_;
+    }
+    const Quantity getQuantity()
+    {
+        return quantity_;
+    }
+
+    OrderPointer toOrderPointer(OrderType orderType)
+    {
+        return std::make_shared<Order>(orderType, getOrderId(), getSide(), getQuantity(), getPrice());
+    }
+
+private:
+    OrderId orderId_;
+    Side side_;
+    Price price_;
+    Quantity quantity_;
+};
+
+struct TradeInfo
+{
+    OrderId orderId_;
+    Price price_;
+    Quantity quantity_;
+};
+
+// Representation of aggregation of buy side and ask side trades
+// create a class Trade that consist of TradeInfo& bidTrade and askTrade
+
+class Trade
+{
+public:
+    Trade(TradeInfo &bidTrade, TradeInfo &askTrade) : bidTrade_(bidTrade), askTrade_(askTrade) {}
+
+private:
+    TradeInfo bidTrade_;
+    TradeInfo askTrade_;
+};
+
+using Trades = std::vector<Trade>;
+
+class OrderBook
+{
+private:
+    // Representation of an entry in the Orderbook, containing an iterator to its current location, and a shared_ptr to the Order
+    struct OrderEntry
+    {
+        OrderPointer order_ = nullptr;
+        OrderPointers::iterator location_;
+    };
+
+    std::map<Price, OrderPointers, std::greater<Price>> bids_;
+};
 
 int main()
 {
