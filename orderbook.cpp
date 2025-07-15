@@ -95,6 +95,11 @@ public:
         return getInitialQuantity() - getRemainingQuantity();
     }
 
+    bool isFilled()
+    {
+        return getRemainingQuantity() == 0;
+    }
+
     void fill(Quantity quantity)
     {
         if (quantity > getRemainingQuantity())
@@ -170,7 +175,7 @@ private:
     TradeInfo askTrade_;
 };
 
-using Trades = std::vector<Trade>;
+using Trades = std::vector<Trade>; // used to store the list of trades that took place
 
 class OrderBook
 {
@@ -182,7 +187,92 @@ private:
         OrderPointers::iterator location_;
     };
 
-    std::map<Price, OrderPointers, std::greater<Price>> bids_;
+    std::map<Price, OrderPointers, std::greater<Price>> bids_; // sorted in descending order, bids need to be sorted based on the highest bid
+    std::map<Price, OrderPointers, std::less<Price>> asks_;    // asks are sorted based on lowest
+    std::unordered_map<OrderId, OrderEntry> orders_;
+
+    bool canMatch(Side side, Price price) const
+    {
+        if (side == Side::BUY)
+        {
+            if (asks_.empty())
+            {
+                return false;
+            }
+            else
+            {
+                const auto &[bestSell, _] = *asks_.begin();
+                return price >= bestSell;
+            }
+        }
+        else
+        {
+            if (bids_.empty())
+            {
+                return false;
+            }
+            else
+            {
+                const auto &[bestBuy, _] = *bids_.begin();
+                return price <= bestBuy;
+            }
+        }
+    }
+
+    Trades matchOrder()
+    {
+        Trades trades;
+        trades.reserve(orders_.size());
+        while (true)
+        {
+            if (bids_.empty() || asks_.empty())
+            {
+                break;
+            }
+            auto &[bidPrice, bidOrders] = *bids_.begin();
+            auto &[askPrice, askOrders] = *asks_.begin();
+            if (bidPrice < askPrice)
+            {
+                break;
+            }
+            while (bidOrders.size() && askOrders.size())
+            {
+                auto &firstBid = bidOrders.front();
+                auto &firstAsk = askOrders.front();
+                Quantity transactedQuantity = std::min(firstBid->getRemainingQuantity(), firstAsk->getRemainingQuantity());
+                firstBid->fill(transactedQuantity);
+                firstAsk->fill(transactedQuantity);
+
+                // remove order from orderbook and bids and asks_ queue if it is filled
+                if (firstBid->isFilled())
+                {
+                    bidOrders.pop_front();
+                    orders_.erase(firstBid->getOrderId());
+                }
+                if (firstAsk->isFilled())
+                {
+                    askOrders.pop_front();
+                    orders_.erase(firstAsk->getOrderId());
+                }
+                // now if our bidOrders or askOrders are empty, we want to remove the price key from the bids_ and asks_ map
+                if (bidOrders.empty())
+                {
+                    bids_.erase(bidPrice);
+                }
+                if (askOrders.empty())
+                {
+                    asks_.erase(askPrice);
+                }
+
+                TradeInfo bidTradeInfo(firstBid->getOrderId(), firstBid->getPrice(), transactedQuantity);
+                TradeInfo askTradeInfo(firstAsk->getOrderId(), firstAsk->getPrice(), transactedQuantity);
+                Trade trade(bidTradeInfo, askTradeInfo);
+
+                trades.push_back(trade);
+            }
+        }
+        // now we want to check if the order is fill and kill, we want to cancel the order
+        }
 };
 
 int main()
