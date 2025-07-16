@@ -32,6 +32,7 @@
     "vector": "cpp",
     "cstddef": "cpp",
     "algorithm": "cpp",
-    "list": "cpp"
+    "list": "cpp",
+    "unordered_map": "cpp"
   }
 }

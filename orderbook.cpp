@@ -272,7 +272,95 @@ private:
             }
         }
         // now we want to check if the order is fill and kill, we want to cancel the order
+        if (!bids_.empty())
+        {
+            auto &[_, bids] = *bids_.begin();
+            auto &order = bids.front();
+            if (order->getOrderType() == OrderType::FILLANDKILL)
+            {
+                cancelOrder(order->getOrderId());
+            }
         }
+        if (!asks_.empty())
+        {
+            auto &[_, asks] = *asks_.begin();
+            auto &order = asks.front();
+            if (order->getOrderType() == OrderType::FILLANDKILL)
+            {
+                cancelOrder(order->getOrderId());
+            }
+        }
+        return trades;
+    }
+
+public:
+    Trades addOrder(OrderPointer order) // if order book already contains the id, then reject it, because no two
+    {
+        if (orders_.contains(order->getOrderId()))
+        {
+            return {};
+        }
+        if (order->getOrderType() == OrderType::FILLANDKILL && !canMatch(order->getSide(), order->getPrice()))
+        {
+            return {};
+        }
+        OrderPointers::iterator iterator;
+        // now we can add the order
+        if (order->getSide() == Side::BUY)
+        {
+            auto &orders = bids_[order->getPrice()];
+            orders.push_back(order);
+            iterator = std::next(orders.begin(), orders.size() - 1); // assign the iterator to point to the last order
+        }
+        else
+        {
+            auto orders = asks_[order->getPrice()];
+            orders.push_back(order);
+            iterator = std::next(orders.begin(), orders.size() - 1);
+        }
+        orders_.insert({order->getOrderId(), OrderEntry(order, iterator)});
+        matchOrder();
+    }
+
+    void cancelOrder(OrderId orderId)
+    {
+        if (!orders_.contains(orderId))
+        {
+            return;
+        }
+        // erase from orders_
+        const auto &[order, orderIterator] = orders_.at(orderId);
+        orders_.erase(orderId);
+        if (order->getSide() == Side::BUY)
+        {
+            auto &orders = bids_.at(order->getPrice());
+            orders.erase(orderIterator);
+            if (orders.empty())
+            {
+                bids_.erase(order->getPrice());
+            }
+        }
+        else
+        {
+            auto &orders = asks_.at(order->getPrice());
+            orders.erase(orderIterator);
+            if (orders.empty())
+            {
+                asks_.erase(order->getPrice());
+            }
+        }
+    }
+
+    Trades ModifyOrder(OrderModify order)
+    {
+        if (orders_.contains(order.getOrderId()))
+        {
+            return {};
+        }
+        cancelOrder(order.getOrderId());
+        const auto &[existingOrder, _] = orders_.at(order.getOrderId());
+        addOrder(order.toOrderPointer(existingOrder->getOrderType()));
+    }
 };
 
 int main()
