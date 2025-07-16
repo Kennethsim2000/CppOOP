@@ -315,12 +315,12 @@ public:
         }
         else
         {
-            auto orders = asks_[order->getPrice()];
+            auto &orders = asks_[order->getPrice()];
             orders.push_back(order);
             iterator = std::next(orders.begin(), orders.size() - 1);
         }
         orders_.insert({order->getOrderId(), OrderEntry(order, iterator)});
-        matchOrder();
+        return matchOrder();
     }
 
     void cancelOrder(OrderId orderId)
@@ -360,7 +360,7 @@ public:
         }
         cancelOrder(order.getOrderId());
         const auto &[existingOrder, _] = orders_.at(order.getOrderId());
-        addOrder(order.toOrderPointer(existingOrder->getOrderType()));
+        return addOrder(order.toOrderPointer(existingOrder->getOrderType()));
     }
 
     std::size_t size() const
@@ -376,7 +376,7 @@ public:
 
         auto createLevelInfos = [](Price price, const OrderPointers &orders)
         {
-            Quantity quantity = std::accumulate(orders.begin(), orders.end(), (Quantity)0, [](std::size_t runningSum, OrderPointer &order)
+            Quantity quantity = std::accumulate(orders.begin(), orders.end(), (Quantity)0, [](std::size_t runningSum, const OrderPointer &order)
                                                 { return runningSum + order->getRemainingQuantity(); });
             return LevelInfo{price, quantity};
         };
@@ -392,10 +392,18 @@ public:
             LevelInfo info = createLevelInfos(price, orders);
             ask.push_back(info);
         }
+        return OrderBookLevelInfos(ask, bid);
     }
 };
 
 int main()
 {
+    std::cout << "Starting program" << std::endl;
+    OrderBook orderbook;
+    const OrderId orderid = 1;
+    orderbook.addOrder(std::make_shared<Order>(OrderType::GOODTILLFILL, orderid, Side::BUY, 100, 10));
+    std::cout << orderbook.size() << std::endl;
+    orderbook.cancelOrder(orderid);
+    std::cout << orderbook.size() << std::endl;
     return 0;
 }
