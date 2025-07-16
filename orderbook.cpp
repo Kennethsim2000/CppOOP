@@ -5,6 +5,7 @@
 #include <memory>
 #include <list>
 #include <map>
+#include <numeric>
 
 enum class OrderType
 {
@@ -360,6 +361,37 @@ public:
         cancelOrder(order.getOrderId());
         const auto &[existingOrder, _] = orders_.at(order.getOrderId());
         addOrder(order.toOrderPointer(existingOrder->getOrderType()));
+    }
+
+    std::size_t size() const
+    {
+        return orders_.size();
+    }
+
+    OrderBookLevelInfos getOrderInfos() const
+    {
+        LevelInfos bid, ask;
+        bid.reserve(orders_.size());
+        ask.reserve(orders_.size());
+
+        auto createLevelInfos = [](Price price, const OrderPointers &orders)
+        {
+            Quantity quantity = std::accumulate(orders.begin(), orders.end(), (Quantity)0, [](std::size_t runningSum, OrderPointer &order)
+                                                { return runningSum + order->getRemainingQuantity(); });
+            return LevelInfo{price, quantity};
+        };
+
+        for (const auto &[price, orders] : bids_)
+        {
+            LevelInfo info = createLevelInfos(price, orders);
+            bid.push_back(info);
+        }
+
+        for (const auto &[price, orders] : asks_)
+        {
+            LevelInfo info = createLevelInfos(price, orders);
+            ask.push_back(info);
+        }
     }
 };
 
