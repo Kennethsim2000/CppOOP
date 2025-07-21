@@ -127,6 +127,7 @@ class OrderModify
 {
 public:
     OrderModify(OrderId orderId, Side side, Price price, Quantity quantity) : orderId_(orderId), side_(side), price_(price), quantity_(quantity) {}
+
     const OrderId getOrderId()
     {
         return orderId_;
@@ -163,9 +164,7 @@ struct TradeInfo
     Quantity quantity_;
 };
 
-// Representation of aggregation of buy side and ask side trades
-// create a class Trade that consist of TradeInfo& bidTrade and askTrade
-
+// Representation of a buy or sell trade info
 class Trade
 {
 public:
@@ -190,7 +189,7 @@ private:
 
     std::map<Price, OrderPointers, std::greater<Price>> bids_; // sorted in descending order, bids need to be sorted based on the highest bid
     std::map<Price, OrderPointers, std::less<Price>> asks_;    // asks are sorted based on lowest
-    std::unordered_map<OrderId, OrderEntry> orders_;
+    std::unordered_map<OrderId, OrderEntry> orders_;           // used to map orderId to the respective orderEntry
 
     bool canMatch(Side side, Price price) const
     {
@@ -203,6 +202,7 @@ private:
             else
             {
                 const auto &[bestSell, _] = *asks_.begin();
+                // std::map.begin() returns an iterator that points to the first element in the std::map container.
                 return price >= bestSell;
             }
         }
@@ -244,7 +244,7 @@ private:
                 firstBid->fill(transactedQuantity);
                 firstAsk->fill(transactedQuantity);
 
-                // remove order from orderbook and bids and asks_ queue if it is filled
+                // remove order from orderbook and bids_ and asks_ queue if it is filled
                 if (firstBid->isFilled())
                 {
                     bidOrders.pop_front();
@@ -295,7 +295,7 @@ private:
     }
 
 public:
-    Trades addOrder(OrderPointer order) // if order book already contains the id, then reject it, because no two
+    Trades addOrder(OrderPointer order) // if order book already contains the id, then reject it, because no duplicate orderIds
     {
         if (orders_.contains(order->getOrderId()))
         {
@@ -325,12 +325,13 @@ public:
 
     void cancelOrder(OrderId orderId)
     {
+        std::cout << "enters cancelOrder" << std::endl;
         if (!orders_.contains(orderId))
         {
             return;
         }
         // erase from orders_
-        const auto &[order, orderIterator] = orders_.at(orderId);
+        const auto [order, orderIterator] = orders_.at(orderId); // if we use &, after calling erase, then the orderPointer reference would be erased.
         orders_.erase(orderId);
         if (order->getSide() == Side::BUY)
         {
@@ -354,7 +355,7 @@ public:
 
     Trades ModifyOrder(OrderModify order)
     {
-        if (orders_.contains(order.getOrderId()))
+        if (!orders_.contains(order.getOrderId()))
         {
             return {};
         }
@@ -407,3 +408,5 @@ int main()
     std::cout << orderbook.size() << std::endl;
     return 0;
 }
+
+// g++ orderbook.cpp -o orderbook
