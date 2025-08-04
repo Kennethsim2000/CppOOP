@@ -20,4 +20,4 @@ public:
 // std::enable_shared_from_this is a C++ utility that allows an object, which is already managed by a std::shared_ptr, to safely obtain a new std::shared_ptr to itself
 // from within its own member functions.
 
-// This is the dispatcher, which contains tasks, which are std::function<void()>, std::vector<std::thread> workers, a mutex, a condition variable,
+// This is the dispatcher, which contains a thread pool, as well as a queue of runnable functions to execute.

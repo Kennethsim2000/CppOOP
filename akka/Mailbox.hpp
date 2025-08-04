@@ -19,16 +19,16 @@ public:
         cv.notify_one();
     }
 
-    std::optional<T> try_pop()
+    bool try_pop(T &elem)
     {
         std::lock_guard<std::mutex> lock(mutex);
         if (queue.empty())
         {
-            return std::nullopt;
+            return false;
         }
         else
         {
-            T &elem = queue.front();
+            elem = std::move(queue.front());
             queue.pop();
             return elem;
         }
