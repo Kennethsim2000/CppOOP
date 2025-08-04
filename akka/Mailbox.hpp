@@ -44,4 +44,4 @@ public:
     }
 };
 
-/*This simulates a mailbox for actors to listen on incoming messages */
+/*This simulates a mailbox for actors to listen on incoming messages. */
