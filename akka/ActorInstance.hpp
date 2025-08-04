@@ -17,9 +17,11 @@ public:
 };
 
 // ActorInstance should contain a mailbox, an actor, and a dispatcher
+// enqueue represents taking in a message, pushing it to a mailbox, and creating a task(thread) and submitting it to our dispatcher for execution.
+// process_message represents dequeuing the messages from the mailbox, and executing them based on the receive method of the Actor
+// scheduled is an atomic variable used to ensure thread safety, and it represents if there is a task in the dispatcher used to process the messages of the mailbox in this actor instance
+
 // Design choices:
 // for mailbox, we do not need to use any pointer because this ActorInstance fully owns it
 // for dispatcher and actor, we use a shared pointer because multiple actorInstance have to access the same dispatcher, which is a thread pool. Actor is an abstract class, so we can have
 // multiple actor instances referencing the same Actor.
-
-//
