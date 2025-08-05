@@ -35,6 +35,10 @@
     "list": "cpp",
     "unordered_map": "cpp",
     "queue": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "__node_handle": "cpp",
+    "deque": "cpp",
+    "forward_list": "cpp",
+    "map": "cpp"
   }
 }

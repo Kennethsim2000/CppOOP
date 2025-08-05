@@ -8,7 +8,7 @@ class Dispatcher : std::enable_shared_from_this<Dispatcher>
     std::vector<std::thread> workers_;
     std::mutex mutex_;
     std::condition_variable cv_;
-    bool stop_ = false;
+    bool stop_ = false; // this is an indicator to the threads to stop working
     std::queue<std::function<void()>> tasks_;
 
 public:
