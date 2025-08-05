@@ -12,7 +12,7 @@ class MailBox
     std::condition_variable cv;
 
 public:
-    void push(T &elem)
+    void push(T elem)
     {
         std::lock_guard<std::mutex> lock(mutex);
         queue.push(std::move(elem));

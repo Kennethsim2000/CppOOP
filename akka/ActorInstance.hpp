@@ -12,12 +12,12 @@ class ActorInstance : std::enable_shared_from_this<ActorInstance>
 
 public:
     ActorInstance(std::shared_ptr<Dispatcher> dispatcher, std::shared_ptr<Actor> actor);
-    void enqueue(const std::string &message);
+    void enqueue(std::string &message);
     void process_message();
 };
 
 // ActorInstance should contain a mailbox, an actor, and a dispatcher
-// enqueue represents taking in a message, pushing it to a mailbox, and creating a task(thread) and submitting it to our dispatcher for execution.
+// enqueue represents taking in a message, pushing it to a mailbox, and creating a task(thread) and submitting it to our dispatcher for execution(if it is not scheduled).
 // process_message represents dequeuing the messages from the mailbox, and executing them based on the receive method of the Actor
 // scheduled is an atomic variable used to ensure thread safety, and it represents if there is a task in the dispatcher used to process the messages of the mailbox in this actor instance
 

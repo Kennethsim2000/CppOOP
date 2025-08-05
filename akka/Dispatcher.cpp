@@ -29,7 +29,7 @@ Dispatcher::Dispatcher(int numThreads)
     }
 }
 
-void Dispatcher::submit(std::function<void()> task)
+void Dispatcher::submit(std::function<void()> task) // submit function handles concurrent adding of tasks
 {
     {
         std::unique_lock<std::mutex> lock(mutex_);
