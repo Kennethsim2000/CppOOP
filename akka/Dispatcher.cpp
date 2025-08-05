@@ -1,4 +1,7 @@
 #include "Dispatcher.hpp"
+#include <functional>
+#include <mutex>
+#include <thread>
 
 // TODO: Implement dispatcher methods
 Dispatcher::Dispatcher(int numThreads)

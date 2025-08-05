@@ -2,6 +2,7 @@
 #include "Mailbox.hpp"
 #include "Actor.hpp"
 #include "Dispatcher.hpp"
+#include <string>
 
 class ActorInstance : std::enable_shared_from_this<ActorInstance>
 {

@@ -1,7 +1,9 @@
 #include <functional>
 #include <vector>
 #include <thread>
+#include <mutex>
 #include <queue>
+#include <condition_variable>
 
 class Dispatcher : std::enable_shared_from_this<Dispatcher>
 {
