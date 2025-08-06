@@ -7,7 +7,7 @@ class ActorRef
 
 public:
     explicit ActorRef(std::shared_ptr<ActorInstance> actorInstance);
-    void tell(std::string &message);
+    void tell(const std::string &message);
 };
 
 // ActorRef is a reference to an actorInstance. This provides an interface for us to create reference to actor instances, and to pass messages to it.

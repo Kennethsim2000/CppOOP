@@ -4,7 +4,7 @@ ActorRef::ActorRef(std::shared_ptr<ActorInstance> actorInstance) : actorInstance
 {
 }
 
-void ActorRef::tell(std::string &message)
+void ActorRef::tell(const std::string &message)
 {
     actorInstance_->enqueue(message);
 }

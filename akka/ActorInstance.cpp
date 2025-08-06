@@ -5,7 +5,7 @@ ActorInstance::ActorInstance(std::shared_ptr<Dispatcher> dispatcher, std::shared
 {
 }
 
-void ActorInstance::enqueue(std::string &message)
+void ActorInstance::enqueue(const std::string &message)
 {
     mailbox_.push(message);
     if (!scheduled_.exchange(true)) // if it is not previously scheduled

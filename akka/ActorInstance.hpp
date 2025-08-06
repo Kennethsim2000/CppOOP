@@ -14,7 +14,7 @@ class ActorInstance : std::enable_shared_from_this<ActorInstance>
 
 public:
     ActorInstance(std::shared_ptr<Dispatcher> dispatcher, std::shared_ptr<Actor> actor);
-    void enqueue(std::string &message);
+    void enqueue(const std::string &message);
     void process_message();
 };
 
