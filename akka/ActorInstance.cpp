@@ -22,9 +22,20 @@ void ActorInstance::enqueue(std::string &message)
 void ActorInstance::process_message()
 {
     std::string message;
-    while (mailbox_.try_pop(message))
+    while (mailbox_.try_pop(message)) // process all the messages in the mailbox
     {
-        // TODO: complete
+        actor_->receive(message);
+    }
+    scheduled_ = false;
+    if (!mailbox_.try_pop(message)) // check if new messages arrive after setting our scheduled to false
+    {                               // mailbox is empty
+        return;
+    }
+    // mailbox is not empty, new messages have arrived while setting scheduled to false, we need to set scheduled to true, and submit a new dispatcher task
+    if (!scheduled_.exchange(true))
+    { // if previously not scheduled, we set scheduled to true and submit a new task to dispatcher
+        dispatcher_->submit([self = shared_from_this()]()
+                            { self->process_message(); });
     }
 }
 
