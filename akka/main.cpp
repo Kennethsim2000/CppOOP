@@ -20,8 +20,8 @@ int main()
 {
     PrinterActor printerActor;
     ActorSystem actorSystem;
-    ActorRef printerOne = actorSystem.spawn(std::make_shared<Actor>(printerActor));
-    ActorRef printerTwo = actorSystem.spawn(std::make_shared<Actor>(printerActor));
+    ActorRef printerOne = actorSystem.spawn(std::make_shared<PrinterActor>(printerActor));
+    ActorRef printerTwo = actorSystem.spawn(std::make_shared<PrinterActor>(printerActor));
     printerOne.tell("hello to printer one");
     printerTwo.tell("hello to printer two");
     std::this_thread::sleep_for(std::chrono::seconds(2));

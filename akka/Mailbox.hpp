@@ -30,7 +30,7 @@ public:
         {
             elem = std::move(queue.front());
             queue.pop();
-            return elem;
+            return true;
         }
     }
 
