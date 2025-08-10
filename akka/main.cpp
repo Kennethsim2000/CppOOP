@@ -18,12 +18,15 @@ public:
 
 int main()
 {
-    PrinterActor printerActor;
     ActorSystem actorSystem;
-    ActorRef printerOne = actorSystem.spawn(std::make_shared<PrinterActor>(printerActor));
-    ActorRef printerTwo = actorSystem.spawn(std::make_shared<PrinterActor>(printerActor));
+    auto sharedPrinter = std::make_shared<PrinterActor>();
+    ActorRef printerOne = actorSystem.spawn(sharedPrinter);
+    std::cout << "=== Spawning printerOne ===" << std::endl;
+    // ActorRef printerTwo = actorSystem.spawn(sharedPrinter);
+    // std::cout << "=== Spawning printerTwo ===" << std::endl;
+
     printerOne.tell("hello to printer one");
-    printerTwo.tell("hello to printer two");
+    // printerTwo.tell("hello to printer two");
     std::this_thread::sleep_for(std::chrono::seconds(2));
     return 0;
 }

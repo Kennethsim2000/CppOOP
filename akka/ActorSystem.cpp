@@ -1,5 +1,6 @@
 #include "ActorSystem.hpp"
 #include <memory>
+#include <iostream>
 
 ActorSystem::ActorSystem()
 {
@@ -8,7 +9,21 @@ ActorSystem::ActorSystem()
 
 ActorRef ActorSystem::spawn(std::shared_ptr<Actor> actor)
 {
-    ActorRef actorRef = ActorRef(std::make_shared<ActorInstance>(dispatcher_, std::move(actor)));
+    std::cout << "actorSystem spawn() called" << std::endl;
+    auto actorInstance = std::make_shared<ActorInstance>(dispatcher_, std::move(actor));
+    std::weak_ptr<ActorInstance> weak_check = actorInstance;
+    std::cout << "ActorInstance created at address: " << actorInstance.get()
+              << ", use_count: " << actorInstance.use_count() << std::endl;
+
+    // Ensure that the shared_ptr is properly established
+    if (weak_check.expired())
+    {
+        std::cout << "Warning: weak_ptr check failed" << std::endl;
+    }
+
+    ActorRef actorRef(actorInstance);
+    std::cout << "ActorRef created, ActorInstance use_count: " << actorInstance.use_count() << std::endl;
+
     return actorRef;
 }
 

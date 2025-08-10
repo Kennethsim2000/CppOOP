@@ -1,20 +1,33 @@
 #include "ActorInstance.hpp"
 #include <functional>
+#include <iostream>
 
 ActorInstance::ActorInstance(std::shared_ptr<Dispatcher> dispatcher, std::shared_ptr<Actor> actor) : dispatcher_(std::move(dispatcher)), actor_(std::move(actor))
 {
 }
 
-void ActorInstance::enqueue(const std::string &message)
+void ActorInstance::enqueue(const std::string &message, std::shared_ptr<ActorInstance> self)
 {
+    std::cout << "enqueue called on ActorInstance " << this << " with message: " << message << std::endl;
+
     mailbox_.push(message);
     if (!scheduled_.exchange(true)) // if it is not previously scheduled
     {
-        std::function<void()> func = [self = shared_from_this()]() // contains a reference to the ActorInstance
+
+        try
         {
-            self->process_message();
-        };
-        dispatcher_->submit(func);
+            std::cout << "Scheduling task, use_count = " << self.use_count() << std::endl;
+            std::function<void()> func = [self]()
+            {
+                self->process_message();
+            };
+            dispatcher_->submit(func);
+        }
+        catch (const std::bad_weak_ptr &e)
+        {
+            scheduled_ = false;
+            std::cout << "error: " << e.what() << std::endl;
+        }
     }
 }
 
