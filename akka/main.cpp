@@ -1,5 +1,6 @@
 #include "ActorSystem.hpp"
 #include "Actor.hpp"
+#include "Globals.hpp"
 
 #include <memory>
 #include <thread>
@@ -7,11 +8,14 @@
 #include <iostream>
 #include <iostream>
 
+std::mutex globals::cout_mutex;
+
 class PrinterActor : public Actor
 {
 public:
     void receive(std::string message) override
     {
+        std::lock_guard<std::mutex> lock(globals::cout_mutex);
         std::cout << "Printer actor received " << message << std::endl;
     }
 };
