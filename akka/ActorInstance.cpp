@@ -8,15 +8,12 @@ ActorInstance::ActorInstance(std::shared_ptr<Dispatcher> dispatcher, std::shared
 
 void ActorInstance::enqueue(const std::string &message, std::shared_ptr<ActorInstance> self)
 {
-    std::cout << "enqueue called on ActorInstance " << this << " with message: " << message << std::endl;
-
     mailbox_.push(message);
     if (!scheduled_.exchange(true)) // if it is not previously scheduled
     {
 
         try
         {
-            std::cout << "Scheduling task, use_count = " << self.use_count() << std::endl;
             std::function<void()> func = [self]()
             {
                 self->process_message();
